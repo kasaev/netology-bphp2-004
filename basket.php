@@ -8,14 +8,38 @@ const OPERATION_DELETE = 2;
 const OPERATION_PRINT = 3;
 const OPERATION_EDIT = 4;
 
+// $operations = [
+//     OPERATION_EXIT => OPERATION_EXIT . '. Завершить программу.',
+//     OPERATION_ADD => OPERATION_ADD . '. Добавить товар в список покупок.',
+//     OPERATION_DELETE => OPERATION_DELETE . '. Удалить товар из списка покупок.',
+//     OPERATION_PRINT => OPERATION_PRINT . '. Отобразить список покупок.',
+//     OPERATION_EDIT => OPERATION_EDIT . '. Редактировать список покупок.',
+// ];
+
 $operations = [
-    OPERATION_EXIT => OPERATION_EXIT . '. Завершить программу.',
-    OPERATION_ADD => OPERATION_ADD . '. Добавить товар в список покупок.',
-    OPERATION_DELETE => OPERATION_DELETE . '. Удалить товар из списка покупок.',
-    OPERATION_PRINT => OPERATION_PRINT . '. Отобразить список покупок.',
-    OPERATION_EDIT => OPERATION_EDIT . '. Редактировать список покупок.',
+    OPERATION_EXIT => array(
+        'text' => OPERATION_EXIT . '. Завершить программу.',
+        'display_always' => 1
+    ),
+    OPERATION_ADD => array(
+        'text' => OPERATION_ADD . '. Добавить товар в список покупок.',
+        'display_always' => 1
+    ),
+    OPERATION_DELETE => array(
+        'text' => OPERATION_DELETE . '. Удалить товар из списка покупок.',
+        'display_always' => 0
+    ),
+    OPERATION_PRINT => array(
+        'text' => OPERATION_PRINT . '. Отобразить список покупок.',
+        'display_always' => 1
+    ),
+    OPERATION_EDIT => array(
+        'text' => OPERATION_EDIT . '. Редактировать список покупок.',
+        'display_always' => 0
+    ),
 ];
 
+$operationActions = [];
 $items = [];
 
 
@@ -36,18 +60,18 @@ do {
 
         echo 'Выберите операцию для выполнения: ' . PHP_EOL;
         // Проверить, есть ли товары в списке? Если нет, то не отображать пункт про удаление товаров
-        displayOperations($operations);
+        displayOperations();
         // echo implode(PHP_EOL, $operations) . PHP_EOL . '> ';
         $operationNumber = trim(fgets(STDIN));
 
-        if (!array_key_exists($operationNumber, $operations)) {
+        if (!in_array($operationNumber, $operationActions)) {
             system('clear');
             echo '!!! Неизвестный номер операции, повторите попытку.' . PHP_EOL;
         }
 
-    } while (!array_key_exists($operationNumber, $operations));
+    } while (!in_array($operationNumber, $operationActions));
 
-    echo 'Выбрана операция: '  . $operations[$operationNumber] . PHP_EOL;
+    echo 'Выбрана операция: ' . $operations[$operationNumber]['text'] . PHP_EOL;
 
     switch ($operationNumber) {
         case OPERATION_ADD:
@@ -131,7 +155,7 @@ function addItem(array $items, string $itemName) : array {
 
 
 function deleteItem(array $items, string $itemName) : array {
-    if (in_array($itemName, $items, true) !== false) {
+    if (in_array($itemName, $items, true)) {
         while (($key = array_search($itemName, $items, true)) !== false) {
             unset($items[$key]);
         }
@@ -142,7 +166,7 @@ function deleteItem(array $items, string $itemName) : array {
 }
 
 function editItem(array $items, string $itemName, string $newItemName = '') : array {
-    if (in_array($itemName, $items, true) !== false) {
+    if (in_array($itemName, $items, true)) {
         while (($key = array_search($itemName, $items, true)) !== false) {
             $items[$key] = $newItemName;
         }
@@ -154,6 +178,45 @@ function editItem(array $items, string $itemName, string $newItemName = '') : ar
 }
 
 
-function displayOperations($operations) : void {
-    echo implode(PHP_EOL, $operations) . PHP_EOL . '> ';
+// function displayOperations() : void {
+//     global $operations;
+//     global $items;
+
+//     if (count($items) > 0) {
+//         echo implode(PHP_EOL, $operations) . PHP_EOL . '> ';    
+//     } else {
+//         for ($i = 0; $i < count($operations); $i++) {
+//             if ($i <> 2 && $i <> 4) {
+//                 echo '> ' . $i . ' ' . $operations[$i] . PHP_EOL;
+//             }
+//         }
+//     }
+    
+//     //echo implode(PHP_EOL, $operations) . PHP_EOL . '> ';
+// }
+
+
+
+function displayOperations() : array {
+    global $operations;
+    global $items;
+    global $operationActions;
+
+    $operationActions = [];
+    
+    if (count($items) > 0) {
+        for ($i = 0; $i < count($operations); $i++) {
+            echo '> ' . $operations[$i]['text'] . PHP_EOL;
+            array_push($operationActions, $i);
+        }
+    } else {
+        for ($i = 0; $i < count($operations); $i++) {
+            if ($operations[$i]['display_always'] == 1) {
+                echo '> ' . $operations[$i]['text'] . PHP_EOL;
+                array_push($operationActions, $i);
+            }
+        }
+    }
+
+    return $operationActions;
 }
